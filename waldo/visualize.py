@@ -37,7 +37,27 @@ def draw_result(image_bgr, candidates, truth=None, scale=None, max_guesses=1):
 
 
 def show(window_name, image):
-    """Pop-up window. Press any key to close."""
-    cv2.imshow(window_name, image)
+    """Pop-up window. Press any key to close.
+
+    Uses OpenCV's window if available. Some OpenCV installs (the "headless"
+    builds) have no window support, so fall back to a Matplotlib window.
+    """
+    try:
+        cv2.imshow(window_name, image)
+    except cv2.error:
+        show_matplotlib(window_name, image)
+        return
     cv2.waitKey(0)
     cv2.destroyWindow(window_name)
+
+
+def show_matplotlib(window_name, image):
+    import matplotlib.pyplot as plt
+
+    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    fig = plt.figure(window_name)
+    plt.imshow(rgb)
+    plt.axis("off")
+    plt.tight_layout()
+    plt.show()
+    plt.close(fig)

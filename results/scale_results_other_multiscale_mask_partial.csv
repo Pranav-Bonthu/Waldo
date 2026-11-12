@@ -1,0 +1,10 @@
+method,level,top5,neg_rej
+zncc  | gray,5,1.0,0.8333333333333334
+zncc  | bgr,5,1.0,0.8333333333333334
+zncc  | bgr+clahe+blur,5,1.0,0.6666666666666666
+zncc  | gray,10,1.0,1.0
+zncc  | bgr,10,1.0,1.0
+zncc  | bgr+clahe+blur,10,1.0,0.5
+zncc  | gray,full,1.0,
+zncc  | bgr,full,1.0,
+zncc  | bgr+clahe+blur,full,1.0,

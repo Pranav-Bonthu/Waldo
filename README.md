@@ -48,6 +48,9 @@ waldo/peaks.py         top-k peaks with non-max suppression
 waldo/color_mask.py    red/white filter with thresholds learned from the template
 waldo/evaluate.py      IoU, rank of first correct guess, not-found threshold
 waldo/crops.py         random crops with or without Waldo
+waldo/detector.py      full pipeline incl. multi-scale matching
+waldo/template_mask.py automatic mask: ignore background and spears/poles
+configs/best.json      best setting found so far
 scripts/               labeler, dataset builder, single run, grid search, scale test
 results/               grid search tables (CSV)
 ```
@@ -88,10 +91,45 @@ more look-alikes and the two Waldos are not the same size (36x54 px in image
 
 Run the full scene yourself: `python scripts/find_waldo.py data/original/1.jpg`
 
+## Multi-scale matching + template mask (full scenes work)
+
+Two fixes made the "template from the other image" case work on full scenes:
+
+1. **Multi-scale matching** (`--multiscale`). The template is resized from
+   0.6x to 1.4x in 17 steps and matched at every size. Each size's score map
+   is z-scored ((score - mean) / std) so sizes can be compared fairly.
+   Without that, tiny templates win because they match random clutter.
+2. **Template mask** (`--mask`). Pixels that are not Waldo are ignored:
+   the template's background color (the yellow in image 1) and tall thin
+   objects in front of him (the red spear across his face in image 1).
+   See `waldo/template_mask.py`.
+
+Best setting, saved as `configs/best.json`: zncc + BGR + CLAHE + blur +
+multi-scale + mask. Template always from the OTHER image:
+
+| Search area | #1 guess correct | In top 5 |
+|---|---|---|
+| 5x crops | 10/10 | 10/10 |
+| 10x crops | 10/10 | 10/10 |
+| 20x crops | 9/10 | 10/10 |
+| Full scene | 2/2 | 2/2 |
+
+Before these fixes, the same case was 0/2 on full scenes.
+
+```bash
+python scripts/find_waldo.py data/original/9.jpg --template data/templates/1.png --config configs/best.json
+python scripts/find_waldo.py data/original/1.jpg --template data/templates/9.png --config configs/best.json
+python scripts/scale_test.py --template-source other --multiscale --mask --methods 4 5 7
+```
+
+A full scene takes about 4 to 8 seconds with multi-scale on.
+The margin on image 9 is small, so more labeled images are needed to know
+how well this generalizes.
+
 ## Next steps
 
-- Multi-scale matching (image pyramid) so the template size doesn't have to match.
-  This is the main blocker for full scenes with a template from another image.
+- Label more images to test the best setting on more than two Waldos
+- Speed up multi-scale (coarse-to-fine search, or FFT correlation)
 - Mirror-flipped template
 - FFT-based correlation
 - Stripe-frequency detector

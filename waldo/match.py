@@ -17,8 +17,12 @@ OPENCV_METHODS = {
 }
 
 
-def raw_score_map(image, template, metric, backend="opencv"):
-    """Score map in the metric's natural units (SSD: lower is better)."""
+def raw_score_map(image, template, metric, backend="opencv", mask=None):
+    """Score map in the metric's natural units (SSD: lower is better).
+
+    mask (optional, OpenCV backend only): uint8 array the size of the
+    template, 255 = use pixel, 0 = ignore pixel.
+    """
     if template.shape[0] > image.shape[0] or template.shape[1] > image.shape[1]:
         raise ValueError("Template is larger than the image")
 
@@ -29,7 +33,17 @@ def raw_score_map(image, template, metric, backend="opencv"):
         if img.shape[2] == 1:
             img = img[:, :, 0]
             tpl = tpl[:, :, 0]
-        return cv2.matchTemplate(img, tpl, OPENCV_METHODS[metric])
+        if mask is None:
+            return cv2.matchTemplate(img, tpl, OPENCV_METHODS[metric])
+        scores = cv2.matchTemplate(img, tpl, OPENCV_METHODS[metric], mask=mask)
+        # Masked matching can divide by zero on flat windows. Replace any
+        # NaN/inf with the worst finite score so they never win.
+        finite = np.isfinite(scores)
+        worst = scores[finite].max() if metric == "ssd" else scores[finite].min()
+        return np.where(finite, scores, worst).astype(np.float32)
+
+    if mask is not None:
+        raise ValueError("Template masks are only supported with the OpenCV backend")
 
     if backend == "numpy":
         return correlation.match_numpy(image, template, metric)
@@ -40,9 +54,9 @@ def raw_score_map(image, template, metric, backend="opencv"):
     raise ValueError(f"Unknown backend: {backend}")
 
 
-def score_map(image, template, metric, backend="opencv"):
+def score_map(image, template, metric, backend="opencv", mask=None):
     """Score map where higher is always better (SSD is negated)."""
-    scores = raw_score_map(image, template, metric, backend)
+    scores = raw_score_map(image, template, metric, backend, mask)
     if metric == "ssd":
         return -scores
     return scores

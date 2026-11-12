@@ -66,6 +66,8 @@ def main():
     parser.add_argument("--color-filter", action="store_true", help="turn on red/white re-ranking")
     parser.add_argument("--backend", choices=["opencv", "numpy", "loops"])
     parser.add_argument("--threshold", type=float, help="not-found score threshold")
+    parser.add_argument("--multiscale", action="store_true", help="try the template at many sizes")
+    parser.add_argument("--mask", action="store_true", help="ignore template pixels that are not Waldo")
     parser.add_argument("--no-show", action="store_true", help="print only, no pop-up window")
     parser.add_argument("--show-all", action="store_true", help="show all top 5 guesses, not just #1")
     args = parser.parse_args()
@@ -87,6 +89,10 @@ def main():
         cfg["backend"] = args.backend
     if args.threshold is not None:
         cfg["not_found_threshold"] = args.threshold
+    if args.multiscale:
+        cfg["multiscale"]["enabled"] = True
+    if args.mask:
+        cfg["template_mask"]["enabled"] = True
 
     entry = find_manifest_entry(args.image)
     if entry is None:
@@ -108,7 +114,8 @@ def main():
     print(f"Runtime: {result['seconds'] * 1000:.1f} ms")
     n_show = len(result["candidates"]) if args.show_all else 1
     for rank, c in enumerate(result["candidates"][:n_show], start=1):
-        print(f"  {rank}. box={c['box']}  score={c['score']:.4f}")
+        scale_note = f"  scale={c['scale']:.2f}" if "scale" in c else ""
+        print(f"  {rank}. box={c['box']}  score={c['score']:.4f}{scale_note}")
     if not result["found"]:
         print("Verdict: Waldo NOT found (best score below threshold)")
     if truth is not None:

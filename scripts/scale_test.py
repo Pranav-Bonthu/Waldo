@@ -73,6 +73,8 @@ def make_cfg(m):
     cfg["edges"] = m.get("edges", "none")
     cfg["smoothing"] = dict(cfg["smoothing"], enabled=m.get("blur", False))
     cfg["color_filter"] = dict(cfg["color_filter"], enabled=m.get("color_filter", False))
+    cfg["multiscale"] = dict(cfg["multiscale"], enabled=m.get("multiscale", False))
+    cfg["template_mask"] = dict(cfg["template_mask"], enabled=m.get("mask", False))
     cfg["not_found_threshold"] = None
     return cfg
 
@@ -119,6 +121,9 @@ def main():
     parser.add_argument("--negatives", type=int, default=3)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--no-show", action="store_true")
+    parser.add_argument("--multiscale", action="store_true", help="try the template at many sizes")
+    parser.add_argument("--mask", action="store_true", help="ignore template pixels that are not Waldo")
+    parser.add_argument("--methods", type=int, nargs="+", help="only run these method numbers (1-based)")
     args = parser.parse_args()
 
     labels = load_labels()
@@ -126,6 +131,13 @@ def main():
     templates = {}
     for name, (x, y, w, h) in labels.items():
         templates[name] = originals[name][y:y + h, x:x + w].copy()
+
+    global METHODS
+    if args.methods:
+        METHODS = [METHODS[i - 1] for i in args.methods]
+    for m in METHODS:
+        m["multiscale"] = args.multiscale
+        m["mask"] = args.mask
 
     rows = []
     timing = {}
@@ -155,13 +167,20 @@ def main():
 
     results_dir = REPO_ROOT / "results"
     results_dir.mkdir(exist_ok=True)
-    csv_path = results_dir / f"scale_results_{args.template_source}.csv"
+    suffix = ""
+    if args.multiscale:
+        suffix += "_multiscale"
+    if args.mask:
+        suffix += "_mask"
+    if args.methods or args.levels != ["5", "10", "20", "full"]:
+        suffix += "_partial"
+    csv_path = results_dir / f"scale_results_{args.template_source}{suffix}.csv"
     with open(csv_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["method", "level", "top5", "neg_rej"])
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"\nTop-5 accuracy (template source: {args.template_source})")
+    print(f"\nTop-5 accuracy (template source: {args.template_source}, multiscale: {args.multiscale}, mask: {args.mask})")
     header = f"{'metric | pre-processing':<40}" + "".join(f"{lv:>7}" for lv in args.levels)
     print(header)
     for m in METHODS:

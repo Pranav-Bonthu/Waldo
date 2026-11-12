@@ -1,0 +1,9 @@
+{
+  "_format": "box = [x, y, width, height] in pixels of data/original/<image>. Box covers Waldo's head and hat with small padding.",
+  "1.jpg": {
+    "waldo": [707, 508, 36, 54]
+  },
+  "9.jpg": {
+    "waldo": [232, 731, 30, 42]
+  }
+}

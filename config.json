@@ -1,0 +1,24 @@
+{
+  "color_space": "gray",
+  "hist_eq": "none",
+  "clahe_clip": 2.0,
+  "clahe_tile": 8,
+  "smoothing": {
+    "enabled": false,
+    "ksize": 5,
+    "sigma": 1.0
+  },
+  "edges": "none",
+  "canny_low": 50,
+  "canny_high": 150,
+  "metric": "zncc",
+  "backend": "opencv",
+  "top_k": 5,
+  "nms": true,
+  "color_filter": {
+    "enabled": false,
+    "min_ratio": 0.5
+  },
+  "not_found_threshold": null,
+  "iou_threshold": 0.5
+}

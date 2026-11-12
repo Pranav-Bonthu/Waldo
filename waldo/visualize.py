@@ -9,8 +9,10 @@ RED = (0, 0, 255)
 MAX_DISPLAY = 1000  # longest side of the pop-up, in pixels
 
 
-def draw_result(image_bgr, candidates, truth=None, scale=None):
+def draw_result(image_bgr, candidates, truth=None, scale=None, max_guesses=1):
     """Resize to fit the screen and draw truth (green) and ranked guesses (red).
+
+    Only the top `max_guesses` guesses are drawn (default: just the #1 guess).
 
     Small crops are enlarged (up to 3x) so Waldo is visible. Full scenes are
     shrunk so the window fits on screen.
@@ -24,7 +26,7 @@ def draw_result(image_bgr, candidates, truth=None, scale=None):
         x, y, w, h = [int(round(v * scale)) for v in truth]
         cv2.rectangle(out, (x, y), (x + w, y + h), GREEN, 3)
 
-    for rank, c in enumerate(candidates, start=1):
+    for rank, c in enumerate(candidates[:max_guesses], start=1):
         x, y, w, h = [int(round(v * scale)) for v in c["box"]]
         thickness = 3 if rank == 1 else 2
         cv2.rectangle(out, (x, y), (x + w, y + h), RED, thickness)

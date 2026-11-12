@@ -7,7 +7,8 @@ Usage:
     python scripts/find_waldo.py data/original/1.jpg            # full scene
 
 Settings come from config.json. Flags override individual settings.
-Green box = true Waldo location (if known), red boxes = ranked guesses.
+Green box = true Waldo location (if known), red box = the #1 guess.
+Add --show-all to see all top 5 guesses.
 """
 
 import argparse
@@ -66,6 +67,7 @@ def main():
     parser.add_argument("--backend", choices=["opencv", "numpy", "loops"])
     parser.add_argument("--threshold", type=float, help="not-found score threshold")
     parser.add_argument("--no-show", action="store_true", help="print only, no pop-up window")
+    parser.add_argument("--show-all", action="store_true", help="show all top 5 guesses, not just #1")
     args = parser.parse_args()
 
     cfg = load_config(args.config) if args.config else load_config()
@@ -104,21 +106,25 @@ def main():
 
     print(f"Image: {args.image}   template: {template_file.name}   metric: {cfg['metric']}")
     print(f"Runtime: {result['seconds'] * 1000:.1f} ms")
-    for rank, c in enumerate(result["candidates"], start=1):
+    n_show = len(result["candidates"]) if args.show_all else 1
+    for rank, c in enumerate(result["candidates"][:n_show], start=1):
         print(f"  {rank}. box={c['box']}  score={c['score']:.4f}")
     if not result["found"]:
         print("Verdict: Waldo NOT found (best score below threshold)")
     if truth is not None:
         rank = hit_rank(result["candidates"], truth, cfg.get("iou_threshold", 0.5))
-        if rank is None:
-            print(f"Truth {truth}: missed (not in top {cfg['top_k']})")
+        if rank == 1:
+            print(f"Truth {truth}: #1 guess is CORRECT")
+        elif rank is None:
+            print(f"Truth {truth}: #1 guess is wrong (Waldo not in top {cfg['top_k']} either)")
         else:
-            print(f"Truth {truth}: found at rank {rank}")
+            print(f"Truth {truth}: #1 guess is wrong (Waldo is guess #{rank})")
     elif entry is not None:
         print("Truth: this crop has no Waldo")
 
     if not args.no_show:
-        show("Where's Waldo (any key to close)", draw_result(image, result["candidates"], truth))
+        max_guesses = len(result["candidates"]) if args.show_all else 1
+        show("Where's Waldo (any key to close)", draw_result(image, result["candidates"], truth, max_guesses=max_guesses))
 
 
 if __name__ == "__main__":

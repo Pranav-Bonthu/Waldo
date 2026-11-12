@@ -47,7 +47,8 @@ waldo/match.py         OpenCV or NumPy backend, higher score = better
 waldo/peaks.py         top-k peaks with non-max suppression
 waldo/color_mask.py    red/white filter with thresholds learned from the template
 waldo/evaluate.py      IoU, rank of first correct guess, not-found threshold
-scripts/               labeler, dataset builder, single run, grid search
+waldo/crops.py         random crops with or without Waldo
+scripts/               labeler, dataset builder, single run, grid search, scale test
 results/               grid search tables (CSV)
 ```
 
@@ -67,9 +68,30 @@ Waldo. This case is easy since the template is an exact copy of the pixels.
 top-5 accuracy, from `ssd | bgr+blur` and `zncc | bgr+clahe+blur`. Color plus
 smoothing helps when the two Waldos are drawn slightly differently.
 
+## Bigger images (scale test)
+
+`python scripts/scale_test.py` runs 11 methods on crops 5x, 10x and 20x
+Waldo's box size, then on the full scene. Top-5 accuracy:
+
+| Method | Template | 5x | 10x | 20x | Full |
+|---|---|---|---|---|---|
+| SSD / NCC / ZNCC (any) | same image | 1.00 | 1.00 | 1.00 | 1.00 |
+| ccorr gray | same image | 0.60 | 0.30 | 0.00 | 0.00 |
+| zncc bgr+clahe+blur+colorfilter | other image | 0.80 | 0.50 | 0.40 | 0.00 |
+| ssd bgr+blur | other image | 0.60 | 0.50 | 0.00 | 0.00 |
+| zncc gray | other image | 0.10 | 0.00 | 0.00 | 0.00 |
+
+With an exact template, size doesn't matter. With a template from a
+different scene, accuracy falls as the search area grows, because there are
+more look-alikes and the two Waldos are not the same size (36x54 px in image
+1 vs 30x42 px in image 9). The color filter helps the most at larger scales.
+
+Run the full scene yourself: `python scripts/find_waldo.py data/original/1.jpg`
+
 ## Next steps
 
-- Multi-scale matching (image pyramid) so the template size doesn't have to match
+- Multi-scale matching (image pyramid) so the template size doesn't have to match.
+  This is the main blocker for full scenes with a template from another image.
 - Mirror-flipped template
 - FFT-based correlation
 - Stripe-frequency detector

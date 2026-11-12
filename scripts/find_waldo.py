@@ -4,6 +4,7 @@ Usage:
     python scripts/find_waldo.py data/zoomed/1_pos0.png
     python scripts/find_waldo.py data/zoomed/9_pos2.png --metric ncc --color-space bgr
     python scripts/find_waldo.py data/zoomed/1_neg0.png --threshold 0.6
+    python scripts/find_waldo.py data/original/1.jpg            # full scene
 
 Settings come from config.json. Flags override individual settings.
 Green box = true Waldo location (if known), red boxes = ranked guesses.
@@ -15,7 +16,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from waldo.data import MANIFEST_PATH, TEMPLATE_DIR, load_config, load_json, read_image  # noqa: E402
+from waldo.data import (  # noqa: E402
+    MANIFEST_PATH,
+    ORIGINAL_DIR,
+    TEMPLATE_DIR,
+    load_config,
+    load_json,
+    load_labels,
+    read_image,
+    template_path,
+)
 from waldo.detector import detect  # noqa: E402
 from waldo.evaluate import hit_rank  # noqa: E402
 from waldo.visualize import draw_result, show  # noqa: E402
@@ -29,6 +39,17 @@ def find_manifest_entry(image_path):
         if entry["file"] == Path(image_path).name:
             return entry
     return None
+
+
+def find_original_entry(image_path):
+    """If the image is a labeled full scene in data/original, use its label."""
+    path = Path(image_path).resolve()
+    if path.parent != ORIGINAL_DIR.resolve():
+        return None
+    labels = load_labels()
+    if path.name not in labels:
+        return None
+    return {"template": template_path(path.name).name, "box": labels[path.name]}
 
 
 def main():
@@ -66,12 +87,14 @@ def main():
         cfg["not_found_threshold"] = args.threshold
 
     entry = find_manifest_entry(args.image)
+    if entry is None:
+        entry = find_original_entry(args.image)
     if args.template:
         template_file = Path(args.template)
     elif entry is not None:
         template_file = TEMPLATE_DIR / entry["template"]
     else:
-        parser.error("No --template given and the image is not in the manifest")
+        parser.error("No --template given and the image is not in the manifest or labels")
 
     image = read_image(args.image)
     template = read_image(template_file)

@@ -33,31 +33,21 @@ from waldo.data import (  # noqa: E402
     save_json,
     template_path,
 )
-from waldo.evaluate import iou  # noqa: E402
+from waldo import crops  # noqa: E402
 
 
 def positive_crop(rng, image_shape, box, size):
     """Random square crop of `size` that fully contains `box`."""
-    H, W = image_shape[:2]
-    x, y, w, h = box
-    x_min = max(0, x + w - size)
-    x_max = min(x, W - size)
-    y_min = max(0, y + h - size)
-    y_max = min(y, H - size)
-    cx = rng.randint(x_min, x_max)
-    cy = rng.randint(y_min, y_max)
+    cx, cy, _, _ = crops.positive_crop(rng, image_shape, box, size)
     return cx, cy
 
 
-def negative_crop(rng, image_shape, box, size, max_tries=1000):
+def negative_crop(rng, image_shape, box, size):
     """Random square crop of `size` that does not touch `box` at all."""
-    H, W = image_shape[:2]
-    for _ in range(max_tries):
-        cx = rng.randint(0, W - size)
-        cy = rng.randint(0, H - size)
-        if iou([cx, cy, size, size], box) == 0.0:
-            return cx, cy
-    raise RuntimeError("Could not find a negative crop that avoids Waldo")
+    corner = crops.negative_crop(rng, image_shape, box, size)
+    if corner is None:
+        raise RuntimeError("Could not find a negative crop that avoids Waldo")
+    return corner
 
 
 def main():

@@ -1,0 +1,217 @@
+{
+  "_format": "box = [x, y, w, h] of Waldo inside the crop, null if Waldo is absent",
+  "zoom": 5.0,
+  "seed": 42,
+  "crops": [
+    {
+      "file": "1_pos0.png",
+      "source": "1.jpg",
+      "template": "1.png",
+      "origin": [
+        636,
+        320
+      ],
+      "box": [
+        71,
+        188,
+        36,
+        54
+      ]
+    },
+    {
+      "file": "1_pos1.png",
+      "source": "1.jpg",
+      "template": "1.png",
+      "origin": [
+        479,
+        481
+      ],
+      "box": [
+        228,
+        27,
+        36,
+        54
+      ]
+    },
+    {
+      "file": "1_pos2.png",
+      "source": "1.jpg",
+      "template": "1.png",
+      "origin": [
+        543,
+        354
+      ],
+      "box": [
+        164,
+        154,
+        36,
+        54
+      ]
+    },
+    {
+      "file": "1_pos3.png",
+      "source": "1.jpg",
+      "template": "1.png",
+      "origin": [
+        530,
+        327
+      ],
+      "box": [
+        177,
+        181,
+        36,
+        54
+      ]
+    },
+    {
+      "file": "1_pos4.png",
+      "source": "1.jpg",
+      "template": "1.png",
+      "origin": [
+        661,
+        318
+      ],
+      "box": [
+        46,
+        190,
+        36,
+        54
+      ]
+    },
+    {
+      "file": "1_neg0.png",
+      "source": "1.jpg",
+      "template": "1.png",
+      "origin": [
+        1385,
+        758
+      ],
+      "box": null
+    },
+    {
+      "file": "1_neg1.png",
+      "source": "1.jpg",
+      "template": "1.png",
+      "origin": [
+        1116,
+        89
+      ],
+      "box": null
+    },
+    {
+      "file": "1_neg2.png",
+      "source": "1.jpg",
+      "template": "1.png",
+      "origin": [
+        1209,
+        432
+      ],
+      "box": null
+    },
+    {
+      "file": "9_pos0.png",
+      "source": "9.jpg",
+      "template": "9.png",
+      "origin": [
+        60,
+        570
+      ],
+      "box": [
+        172,
+        161,
+        30,
+        42
+      ]
+    },
+    {
+      "file": "9_pos1.png",
+      "source": "9.jpg",
+      "template": "9.png",
+      "origin": [
+        75,
+        618
+      ],
+      "box": [
+        157,
+        113,
+        30,
+        42
+      ]
+    },
+    {
+      "file": "9_pos2.png",
+      "source": "9.jpg",
+      "template": "9.png",
+      "origin": [
+        111,
+        692
+      ],
+      "box": [
+        121,
+        39,
+        30,
+        42
+      ]
+    },
+    {
+      "file": "9_pos3.png",
+      "source": "9.jpg",
+      "template": "9.png",
+      "origin": [
+        206,
+        569
+      ],
+      "box": [
+        26,
+        162,
+        30,
+        42
+      ]
+    },
+    {
+      "file": "9_pos4.png",
+      "source": "9.jpg",
+      "template": "9.png",
+      "origin": [
+        195,
+        613
+      ],
+      "box": [
+        37,
+        118,
+        30,
+        42
+      ]
+    },
+    {
+      "file": "9_neg0.png",
+      "source": "9.jpg",
+      "template": "9.png",
+      "origin": [
+        859,
+        225
+      ],
+      "box": null
+    },
+    {
+      "file": "9_neg1.png",
+      "source": "9.jpg",
+      "template": "9.png",
+      "origin": [
+        919,
+        603
+      ],
+      "box": null
+    },
+    {
+      "file": "9_neg2.png",
+      "source": "9.jpg",
+      "template": "9.png",
+      "origin": [
+        569,
+        6
+      ],
+      "box": null
+    }
+  ]
+}

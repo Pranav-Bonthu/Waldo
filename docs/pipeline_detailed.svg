@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="1600" viewBox="0 0 680 1600">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="680" height="1600" fill="#FFFFFF"/>
+<text x="40" y="28" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#2C2C2A">1. Build the template mask (template only)</text>
+<rect x="220" y="40" width="240" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="340.0" y="58" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#712B13">Template crop</text>
+<text x="340.0" y="78" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#993C1D">Waldo cut from a labeled scene</text>
+<path d="M340 96 L340 124" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="220" y="126" width="240" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="340.0" y="144" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#712B13">Convert to HSV</text>
+<text x="340.0" y="164" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#993C1D">hue, saturation, value</text>
+<path d="M340 182 L340 210" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="220" y="212" width="240" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="340.0" y="230" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#712B13">Find strong colors</text>
+<text x="340.0" y="250" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#993C1D">saturation ≥ 100, value ≥ 80</text>
+<path d="M340 268 L340 283 L180 283 L180 296" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M340 268 L340 283 L500 283 L500 296" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="60" y="298" width="240" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="180.0" y="316" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#712B13">Background mask</text>
+<text x="180.0" y="336" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#993C1D">dominant hue on the border</text>
+<rect x="380" y="298" width="240" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="500.0" y="316" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#712B13">Occluder mask</text>
+<text x="500.0" y="336" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#993C1D">tall, thin blobs = poles</text>
+<path d="M180 354 L180 369 L340 369 L340 382" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M500 354 L500 369 L340 369 L340 382" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="220" y="384" width="240" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="340.0" y="402" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#712B13">Keep the rest</text>
+<text x="340.0" y="422" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#993C1D">grow removed areas by 1 px</text>
+<path d="M340 440 L340 480 L490 480 L490 518" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="40" y="500" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#2C2C2A">2. Match at many sizes</text>
+<rect x="60" y="520" width="240" height="56" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+<text x="180.0" y="538" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#085041">Scene image</text>
+<text x="180.0" y="558" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#0F6E56">the whole puzzle, color</text>
+<rect x="370" y="520" width="240" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="490.0" y="538" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#712B13">Template + mask</text>
+<text x="490.0" y="558" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#993C1D">mask marks pixels to use</text>
+<path d="M180 576 L180 604" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="60" y="606" width="240" height="56" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+<text x="180.0" y="624" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#085041">Preprocess scene</text>
+<text x="180.0" y="644" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#0F6E56">CLAHE, blur 5×5, float 0..1</text>
+<rect x="340" y="606" width="300" height="426" rx="12" fill="none" stroke="#888780" stroke-width="0.8" stroke-dasharray="4 4"/>
+<text x="490" y="623" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#5F5E5A">Repeat for 17 sizes, 0.6x to 1.4x</text>
+<path d="M490 576 L490 638" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="360" y="640" width="260" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="490.0" y="658" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#712B13">Resize template + mask</text>
+<text x="490.0" y="678" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#993C1D">area shrink, cubic grow</text>
+<path d="M490 696 L490 718" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="360" y="720" width="260" height="56" rx="8" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="490.0" y="738" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#712B13">Preprocess template</text>
+<text x="490.0" y="758" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#993C1D">same CLAHE and blur</text>
+<path d="M490 776 L490 798" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M300 634 L320 634 L320 828 L358 828" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="360" y="800" width="260" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.8"/>
+<text x="490.0" y="818" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#3C3489">Slide over the scene</text>
+<text x="490.0" y="838" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#534AB7">ZNCC score at every position</text>
+<path d="M490 856 L490 878" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="360" y="880" width="260" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.8"/>
+<text x="490.0" y="898" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#3C3489">Z-score the map</text>
+<text x="490.0" y="918" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#534AB7">(score − mean) / std</text>
+<path d="M490 936 L490 958" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="360" y="960" width="260" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.8"/>
+<text x="490.0" y="978" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#3C3489">Top 5 peaks</text>
+<text x="490.0" y="998" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#534AB7">blank a template-size window</text>
+<path d="M490 1016 L490 1060 L340 1060 L340 1108" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="40" y="1090" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#2C2C2A">3. Pick one and show it</text>
+<rect x="220" y="1110" width="240" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.8"/>
+<text x="340.0" y="1128" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#3C3489">Candidates from all sizes</text>
+<text x="340.0" y="1148" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#534AB7">up to 85 boxes with scores</text>
+<path d="M340 1166 L340 1194" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="220" y="1196" width="240" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.8"/>
+<text x="340.0" y="1214" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#3C3489">Sort and drop overlaps</text>
+<text x="340.0" y="1234" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#534AB7">IoU over 0.3 with a kept box</text>
+<path d="M340 1252 L340 1280" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="220" y="1282" width="240" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="340.0" y="1300" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#444441">Best guess = #1</text>
+<text x="340.0" y="1320" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#5F5E5A">box, score, size</text>
+<path d="M340 1338 L340 1353 L180 1353 L180 1366" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M340 1338 L340 1353 L500 1353 L500 1366" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="60" y="1368" width="240" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="180.0" y="1386" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#444441">Compare to label</text>
+<text x="180.0" y="1406" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#5F5E5A">IoU ≥ 0.5 counts as correct</text>
+<rect x="380" y="1368" width="240" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="500.0" y="1386" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#444441">Draw the result</text>
+<text x="500.0" y="1406" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#5F5E5A">red box, green truth</text>
+<path d="M500 1424 L500 1452" fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="380" y="1454" width="240" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="500.0" y="1472" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#444441">Side panel window</text>
+<text x="500.0" y="1492" text-anchor="middle" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#5F5E5A">zoomed crop with score</text>
+<rect x="60" y="1560" width="18" height="18" rx="4" fill="#FAECE7" stroke="#993C1D" stroke-width="0.8"/>
+<text x="86" y="1569" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#444441">template</text>
+<rect x="210" y="1560" width="18" height="18" rx="4" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.8"/>
+<text x="236" y="1569" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#444441">scene</text>
+<rect x="360" y="1560" width="18" height="18" rx="4" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.8"/>
+<text x="386" y="1569" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#444441">matching</text>
+<rect x="510" y="1560" width="18" height="18" rx="4" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="536" y="1569" dominant-baseline="central" font-family="-apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#444441">output</text>
+</svg>

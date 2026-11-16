@@ -1,6 +1,7 @@
 """Drawing boxes and showing pop-up windows."""
 
 import cv2
+import numpy as np
 
 GREEN = (0, 200, 0)
 RED = (0, 0, 255)
@@ -61,3 +62,40 @@ def show_matplotlib(window_name, image):
     plt.tight_layout()
     plt.show()
     plt.close(fig)
+
+
+def draw_side_panel(image_bgr, best, truth=None, pad=0.6, panel_frac=0.4):
+    """Scene with the #1 guess on the left, a zoomed crop of that guess on the right.
+
+    best    the top candidate dict {box, score, ...}
+    pad     how much context to show around the box (0.6 = 60% of the box
+            size on every side)
+    panel_frac  width of the right panel as a fraction of the left panel
+    """
+    left = draw_result(image_bgr, [best], truth, max_guesses=1)
+    left_h = left.shape[0]
+
+    # Crop around the best box with some context, clamped to the image.
+    H, W = image_bgr.shape[:2]
+    x, y, w, h = best["box"]
+    px, py = int(round(w * pad)), int(round(h * pad))
+    x0, y0 = max(0, x - px), max(0, y - py)
+    x1, y1 = min(W, x + w + px), min(H, y + h + py)
+    crop = image_bgr[y0:y1, x0:x1].copy()
+    cv2.rectangle(crop, (x - x0, y - y0), (x - x0 + w, y - y0 + h), RED, 1)
+
+    # Enlarge the crop to fill the panel height, keeping its aspect ratio.
+    header = 40
+    panel_w = max(120, int(round(left.shape[1] * panel_frac)))
+    scale = min(panel_w / crop.shape[1], (left_h - header) / crop.shape[0])
+    zoom = cv2.resize(crop, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+
+    panel = np.full((left_h, panel_w, 3), 30, dtype=np.uint8)
+    cv2.putText(panel, "Best guess", (10, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2, cv2.LINE_AA)
+    cv2.putText(panel, f"score {best['score']:.2f}", (panel_w - 120, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.5, RED, 1, cv2.LINE_AA)
+    ox = (panel_w - zoom.shape[1]) // 2
+    oy = header + (left_h - header - zoom.shape[0]) // 2
+    panel[oy:oy + zoom.shape[0], ox:ox + zoom.shape[1]] = zoom
+
+    separator = np.full((left_h, 4, 3), 90, dtype=np.uint8)
+    return np.hstack([left, separator, panel])

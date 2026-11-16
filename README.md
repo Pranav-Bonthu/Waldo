@@ -21,9 +21,11 @@ python scripts/label_waldo.py 1.jpg
 # 2. Build templates + zoomed crops from data/labels.json
 python scripts/make_dataset.py
 
-# 3. Find Waldo in one crop (pop-up window: green = truth, red = guesses)
-python scripts/find_waldo.py data/zoomed/1_pos0.png
-python scripts/find_waldo.py data/zoomed/9_pos2.png --metric ncc --color-space bgr --blur
+# 3. Find Waldo (pop-up: scene with the #1 guess in red on the left, green =
+#    truth; zoomed crop of the guess on the right). Uses configs/best.json.
+python scripts/find_waldo.py data/original/1.jpg
+python scripts/find_waldo.py data/original/9.jpg --template data/templates/1.png
+python scripts/find_waldo.py data/zoomed/1_pos0.png --config config.json   # plain baseline
 
 # 4. Try every combination and rank them
 python scripts/grid_search.py
@@ -36,7 +38,7 @@ python -m pytest
 ## Layout
 
 ```
-config.json            default settings (each step can be toggled)
+config.json            baseline settings (each step can be toggled)
 data/original/         full scenes (Hey-Waldo dataset, see SOURCE.md)
 data/labels.json       Waldo's head + hat box in each labeled original
 data/templates/        Waldo templates cut from the originals
@@ -50,7 +52,7 @@ waldo/evaluate.py      IoU, rank of first correct guess, not-found threshold
 waldo/crops.py         random crops with or without Waldo
 waldo/detector.py      full pipeline incl. multi-scale matching
 waldo/template_mask.py automatic mask: ignore background and spears/poles
-configs/best.json      best setting found so far
+configs/best.json      best setting found so far (default for find_waldo.py)
 scripts/               labeler, dataset builder, single run, grid search, scale test
 results/               grid search tables (CSV)
 ```
@@ -117,8 +119,8 @@ multi-scale + mask. Template always from the OTHER image:
 Before these fixes, the same case was 0/2 on full scenes.
 
 ```bash
-python scripts/find_waldo.py data/original/9.jpg --template data/templates/1.png --config configs/best.json
-python scripts/find_waldo.py data/original/1.jpg --template data/templates/9.png --config configs/best.json
+python scripts/find_waldo.py data/original/9.jpg --template data/templates/1.png
+python scripts/find_waldo.py data/original/1.jpg --template data/templates/9.png
 python scripts/scale_test.py --template-source other --multiscale --mask --methods 4 5 7
 ```
 

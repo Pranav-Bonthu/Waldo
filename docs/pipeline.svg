@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="616" viewBox="0 0 680 616" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="680" height="616" fill="#FFFFFF"/>
+
+  <rect x="120" y="40" width="200" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+  <text x="220" y="60" text-anchor="middle" font-size="14" font-weight="500" fill="#2C2C2A">Scene image</text>
+  <text x="220" y="80" text-anchor="middle" font-size="12" fill="#5F5E5A">the full Where's Waldo page</text>
+
+  <rect x="360" y="40" width="200" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+  <text x="460" y="60" text-anchor="middle" font-size="14" font-weight="500" fill="#2C2C2A">Waldo template</text>
+  <text x="460" y="80" text-anchor="middle" font-size="12" fill="#5F5E5A">head + hat from another scene</text>
+
+  <rect x="360" y="136" width="200" height="56" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+  <text x="460" y="156" text-anchor="middle" font-size="14" font-weight="500" fill="#04342C">Template mask</text>
+  <text x="460" y="176" text-anchor="middle" font-size="12" fill="#0F6E56">ignore background and poles</text>
+
+  <rect x="230" y="232" width="220" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+  <text x="340" y="252" text-anchor="middle" font-size="14" font-weight="500" fill="#26215C">Preprocess both</text>
+  <text x="340" y="272" text-anchor="middle" font-size="12" fill="#534AB7">keep color, CLAHE, blur</text>
+
+  <rect x="230" y="328" width="220" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+  <text x="340" y="348" text-anchor="middle" font-size="14" font-weight="500" fill="#26215C">Match at 17 sizes</text>
+  <text x="340" y="368" text-anchor="middle" font-size="12" fill="#534AB7">slide template, ZNCC score map</text>
+
+  <rect x="230" y="424" width="220" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+  <text x="340" y="444" text-anchor="middle" font-size="14" font-weight="500" fill="#26215C">Pick the best peak</text>
+  <text x="340" y="464" text-anchor="middle" font-size="12" fill="#534AB7">z-score, NMS, merge sizes</text>
+
+  <rect x="230" y="520" width="220" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+  <text x="340" y="540" text-anchor="middle" font-size="14" font-weight="500" fill="#2C2C2A">Show the result</text>
+  <text x="340" y="560" text-anchor="middle" font-size="12" fill="#5F5E5A">red box + zoomed side panel</text>
+
+  <g fill="none" stroke="#5F5E5A" stroke-width="1.5" marker-end="url(#arrow)">
+    <line x1="460" y1="96" x2="460" y2="132"/>
+    <path d="M460 192 L460 212 L400 212 L400 228"/>
+    <path d="M220 96 L220 212 L280 212 L280 228"/>
+    <line x1="340" y1="288" x2="340" y2="324"/>
+    <line x1="340" y1="384" x2="340" y2="420"/>
+    <line x1="340" y1="480" x2="340" y2="516"/>
+  </g>
+</svg>

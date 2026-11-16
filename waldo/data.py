@@ -1,4 +1,4 @@
-"""Paths and small helpers for reading the dataset files."""
+"""Paths and small helpers for reading the data files."""
 
 import json
 from pathlib import Path
@@ -9,11 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = REPO_ROOT / "data"
 ORIGINAL_DIR = DATA_DIR / "original"
 TEMPLATE_DIR = DATA_DIR / "templates"
-ZOOMED_DIR = DATA_DIR / "zoomed"
 LABELS_PATH = DATA_DIR / "labels.json"
-MANIFEST_PATH = ZOOMED_DIR / "manifest.json"
-CONFIG_PATH = REPO_ROOT / "config.json"
-BEST_CONFIG_PATH = REPO_ROOT / "configs" / "best.json"
 
 
 def read_image(path):
@@ -39,18 +35,8 @@ def save_json(obj, path):
 def load_labels():
     """Return {image_name: [x, y, w, h]} for every labeled original image."""
     raw = load_json(LABELS_PATH)
-    labels = {}
-    for name, entry in raw.items():
-        if name.startswith("_"):
-            continue
-        labels[name] = entry["waldo"]
-    return labels
-
-
-def load_config(path=CONFIG_PATH):
-    return load_json(path)
+    return {name: entry["waldo"] for name, entry in raw.items() if not name.startswith("_")}
 
 
 def template_path(image_name):
-    stem = Path(image_name).stem
-    return TEMPLATE_DIR / f"{stem}.png"
+    return TEMPLATE_DIR / f"{Path(image_name).stem}.png"

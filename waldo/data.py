@@ -13,6 +13,7 @@ ZOOMED_DIR = DATA_DIR / "zoomed"
 LABELS_PATH = DATA_DIR / "labels.json"
 MANIFEST_PATH = ZOOMED_DIR / "manifest.json"
 CONFIG_PATH = REPO_ROOT / "config.json"
+BEST_CONFIG_PATH = REPO_ROOT / "configs" / "best.json"
 
 
 def read_image(path):

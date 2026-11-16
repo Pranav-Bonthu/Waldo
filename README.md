@@ -31,6 +31,9 @@ template pixel), `--show-all` (print the top 5 guesses), `--no-show`.
 
 ![pipeline](docs/pipeline.svg)
 
+A step-by-step version with every stage the images pass through is in
+[docs/pipeline_detailed.svg](docs/pipeline_detailed.svg).
+
 1. **Template mask** (`waldo/template_mask.py`). The template is cut straight
    out of a scene, so it contains things that are not Waldo: the background
    color at the corners and, in scene 1, a spear across his face. The mask

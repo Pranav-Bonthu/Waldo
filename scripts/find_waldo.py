@@ -1,14 +1,18 @@
-"""Find Waldo in one zoomed crop and show the result in a pop-up window.
+"""Find Waldo in an image and show the best guess in a pop-up window.
 
 Usage:
-    python scripts/find_waldo.py data/zoomed/1_pos0.png
-    python scripts/find_waldo.py data/zoomed/9_pos2.png --metric ncc --color-space bgr
-    python scripts/find_waldo.py data/zoomed/1_neg0.png --threshold 0.6
     python scripts/find_waldo.py data/original/1.jpg            # full scene
+    python scripts/find_waldo.py data/original/9.jpg --template data/templates/1.png
+    python scripts/find_waldo.py data/zoomed/1_pos0.png
+    python scripts/find_waldo.py data/zoomed/1_neg0.png --threshold 0.6
 
-Settings come from config.json. Flags override individual settings.
-Green box = true Waldo location (if known), red box = the #1 guess.
-Add --show-all to see all top 5 guesses.
+Settings come from configs/best.json (template matching with multi-scale
+search and a template mask). Flags override individual settings; pass
+--config config.json for the plain baseline.
+
+The window shows the scene on the left with the #1 guess in a red box
+(green = true location if known) and a zoomed crop of that guess on the
+right. Add --show-all to also print the other top-5 guesses.
 """
 
 import argparse
@@ -18,6 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from waldo.data import (  # noqa: E402
+    BEST_CONFIG_PATH,
     MANIFEST_PATH,
     ORIGINAL_DIR,
     TEMPLATE_DIR,
@@ -29,7 +34,7 @@ from waldo.data import (  # noqa: E402
 )
 from waldo.detector import detect  # noqa: E402
 from waldo.evaluate import hit_rank  # noqa: E402
-from waldo.visualize import draw_result, show  # noqa: E402
+from waldo.visualize import draw_side_panel, show  # noqa: E402
 
 
 def find_manifest_entry(image_path):
@@ -55,9 +60,9 @@ def find_original_entry(image_path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("image", help="path to a zoomed crop")
+    parser.add_argument("image", help="scene or crop to search")
     parser.add_argument("--template", help="template image (default: from manifest)")
-    parser.add_argument("--config", default=None, help="config file (default: config.json)")
+    parser.add_argument("--config", default=BEST_CONFIG_PATH, help="config file (default: configs/best.json)")
     parser.add_argument("--metric", choices=["ccorr", "ssd", "ncc", "zncc"])
     parser.add_argument("--color-space", choices=["gray", "bgr", "hsv"])
     parser.add_argument("--hist-eq", choices=["none", "global", "clahe"])
@@ -69,10 +74,10 @@ def main():
     parser.add_argument("--multiscale", action="store_true", help="try the template at many sizes")
     parser.add_argument("--mask", action="store_true", help="ignore template pixels that are not Waldo")
     parser.add_argument("--no-show", action="store_true", help="print only, no pop-up window")
-    parser.add_argument("--show-all", action="store_true", help="show all top 5 guesses, not just #1")
+    parser.add_argument("--show-all", action="store_true", help="also print the other top-5 guesses")
     args = parser.parse_args()
 
-    cfg = load_config(args.config) if args.config else load_config()
+    cfg = load_config(args.config)
     if args.metric:
         cfg["metric"] = args.metric
     if args.color_space:
@@ -129,9 +134,9 @@ def main():
     elif entry is not None:
         print("Truth: this crop has no Waldo")
 
-    if not args.no_show:
-        max_guesses = len(result["candidates"]) if args.show_all else 1
-        show("Where's Waldo (any key to close)", draw_result(image, result["candidates"], truth, max_guesses=max_guesses))
+    if not args.no_show and result["candidates"]:
+        best = result["candidates"][0]
+        show("Where's Waldo (any key to close)", draw_side_panel(image, best, truth))
 
 
 if __name__ == "__main__":

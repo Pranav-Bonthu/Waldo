@@ -6,9 +6,6 @@ No machine learning. One file to run. OpenCV and NumPy only.
 
 ![Page 9 with the best guess boxed in red and a zoomed side panel](docs/example_9.jpg)
 
-*Page 9. Red is the finder's guess, green is where Waldo really is, and the
-panel on the right is the guess zoomed in with its score.*
-
 [Background](#background) ·
 [Problem statement](#problem-statement) ·
 [Approach](#approach) ·
@@ -22,8 +19,7 @@ panel on the right is the guess zoomed in with its score.*
 ## Background
 
 *Where's Wally?* is a series of picture books by the British illustrator
-Martin Handford. The first one came out in 1987, and the American edition
-renamed the character Waldo. Every page is a crowded drawing of hundreds of
+Martin Handford. Every page is a crowded drawing of hundreds of
 tiny people at a beach, a train station, a battlefield, and somewhere in
 the crowd is Waldo: a thin man in a red and white striped shirt, a red and
 white bobble hat and round glasses. The game is to find him.
@@ -33,13 +29,6 @@ under half an inch tall. The crowd is full of people in red and white
 clothes, striped shirts and red hats. He is usually half hidden behind
 someone, a pole or the edge of a tent. People can spend minutes on one
 page.
-
-That mix is what makes it a good project for an image processing class.
-We know exactly what we are looking for, because we have a picture of him,
-so no large training set is needed. At the same time the page is built to
-fool pattern matching, so the plain version of each technique fails and
-has to be improved step by step. And it is easy to check the answer: open
-the page and look.
 
 ## Problem statement
 
@@ -51,20 +40,11 @@ which we define as overlapping the hand-drawn answer box by at least half
 (the usual rule in object detection, called intersection over union or
 IoU).
 
-Rules I set for the project:
-
-- Plain image processing only. No training and no neural networks.
-- One file to run, short enough to read in an afternoon.
-- A full page should take seconds on a laptop.
-- The real test uses a cut-out from a different page. A cut-out taken
-  from the page being searched always matches itself perfectly, so that
-  result says nothing.
-
 ## Approach
 
 ![Eight steps from a Waldo cut-out and a page to a red box, with a bubble explaining each step](docs/pipeline.svg)
 
-Each step in plain words. The code for steps 2 to 7 is in `waldo/`, and
+The code for steps 2 to 7 is in `waldo/`, and
 `find_waldo.py` runs them in order. A more technical version of the
 diagram, with the OpenCV names, is in
 [docs/pipeline_detailed.svg](docs/pipeline_detailed.svg).

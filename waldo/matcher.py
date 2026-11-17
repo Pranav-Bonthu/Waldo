@@ -1,6 +1,6 @@
 """Multi-scale template matching: the core of the finder.
 
-    1. Pre-process the scene and the template the same way (preprocess.py).
+    1. Pre-process the scene and the template the same way (preprocess()).
     2. Build a mask of the template so background and poles do not count
        (template_mask.py).
     3. Resize the template to several sizes, 0.6x to 1.4x. Waldo is not drawn
@@ -17,16 +17,37 @@
        better-scoring one, and return the top few. Candidate #1 is Waldo.
 """
 
-import time
-
 import cv2
 import numpy as np
 
-from waldo.evaluate import iou
-from waldo.preprocess import preprocess
 from waldo.template_mask import make_mask
 
 SCALES = np.linspace(0.6, 1.4, 17)
+
+
+def preprocess(image_bgr, clahe_clip=2.0, clahe_tile=8, blur_ksize=5, blur_sigma=1.0):
+    """Same treatment for scene and template.
+
+    keep BGR color     Waldo's red and white stripes are a big part of his look
+    CLAHE per channel  evens out contrast so a darker or lighter print still matches
+    Gaussian blur      softens noise so two slightly different drawings line up
+    float32 in 0..1    what cv2.matchTemplate wants
+    """
+    clahe = cv2.createCLAHE(clipLimit=clahe_clip, tileGridSize=(clahe_tile, clahe_tile))
+    out = cv2.merge([clahe.apply(c) for c in cv2.split(image_bgr)])
+    out = cv2.GaussianBlur(out, (blur_ksize, blur_ksize), blur_sigma)
+    return out.astype(np.float32) / 255.0
+
+
+def iou(a, b):
+    """Intersection over Union of two [x, y, w, h] boxes: 1.0 = same box, 0.0 = no overlap."""
+    ax, ay, aw, ah = a
+    bx, by, bw, bh = b
+    inter_w = max(0, min(ax + aw, bx + bw) - max(ax, bx))
+    inter_h = max(0, min(ay + ah, by + bh) - max(ay, by))
+    inter = inter_w * inter_h
+    union = aw * ah + bw * bh - inter
+    return inter / union if union > 0 else 0.0
 
 
 def resize_template(template, scale, mask=None):
@@ -107,9 +128,3 @@ def find_waldo(scene_bgr, template_bgr, scales=SCALES, top_k=5, use_mask=True):
             candidates.append(p)
 
     return merge(candidates)[:top_k]
-
-
-def find_waldo_timed(scene_bgr, template_bgr, **kwargs):
-    start = time.perf_counter()
-    candidates = find_waldo(scene_bgr, template_bgr, **kwargs)
-    return candidates, time.perf_counter() - start

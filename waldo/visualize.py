@@ -5,6 +5,7 @@ import numpy as np
 
 GREEN = (0, 200, 0)
 RED = (0, 0, 255)
+BLACK = (0, 0, 0)
 MAX_DISPLAY = 1000  # longest side of the scene panel, in pixels
 
 
@@ -45,14 +46,14 @@ def draw_side_panel(scene_bgr, best, truth=None, pad=0.6, panel_frac=0.4):
     zoom_scale = min(panel_w / crop.shape[1], (left_h - header) / crop.shape[0])
     zoom = cv2.resize(crop, None, fx=zoom_scale, fy=zoom_scale, interpolation=cv2.INTER_CUBIC)
 
-    panel = np.full((left_h, panel_w, 3), 30, dtype=np.uint8)
-    cv2.putText(panel, "Best guess", (10, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(panel, f"score {best['score']:.2f}", (panel_w - 120, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.5, RED, 1, cv2.LINE_AA)
+    panel = np.full((left_h, panel_w, 3), 255, dtype=np.uint8)
+    cv2.putText(panel, "Waldo guess", (10, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.7, BLACK, 2, cv2.LINE_AA)
+    cv2.putText(panel, f"score {best['score']:.2f}", (panel_w - 120, 26), cv2.FONT_HERSHEY_SIMPLEX, 0.5, BLACK, 1, cv2.LINE_AA)
     ox = (panel_w - zoom.shape[1]) // 2
     oy = header + (left_h - header - zoom.shape[0]) // 2
     panel[oy:oy + zoom.shape[0], ox:ox + zoom.shape[1]] = zoom
 
-    separator = np.full((left_h, 4, 3), 90, dtype=np.uint8)
+    separator = np.full((left_h, 4, 3), 200, dtype=np.uint8)
     return np.hstack([left, separator, panel])
 
 

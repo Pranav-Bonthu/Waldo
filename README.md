@@ -1,15 +1,14 @@
 # Where's Waldo Finder
 
 A small, readable Waldo finder built on one idea: **template matching**.
-A cut-out of Waldo's head and hat is slid over the whole page at several
+Cut-outs of Waldo's head and hat are slid over the whole page at several
 sizes, every position gets a similarity score, and the best-scoring spot is
-the answer. No machine learning, about 450 lines of Python, OpenCV and NumPy
-only.
+the answer. No machine learning, one file to run, OpenCV and NumPy only.
 
 ![Scene 9 with the best guess boxed in red and a zoomed side panel](docs/example_9.jpg)
 
-*Scene 9 searched with a template cut from scene 1. Red = the finder's #1
-guess, green = the labeled answer, right panel = the guess zoomed in.*
+*Scene 9 searched with the templates. Red = the finder's guess, green = the
+labeled answer, right panel = the guess zoomed in.*
 
 ## Quick start
 
@@ -18,19 +17,15 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-python find_waldo.py data/original/9.jpg --template data/templates/1.png
+python find_waldo.py                       # searches the scene named at the top of the file
+python find_waldo.py path/to/any_scene.jpg # or any image you like
 ```
 
 A window opens with the result. Press any key to close it. A full scene
-takes 5 to 10 seconds.
+takes 10 to 20 seconds. Add `--no-show` to print the box without a window.
 
-| Flag | What it does |
-|---|---|
-| `--template PATH` | which Waldo cut-out to search for (default `data/templates/1.png`) |
-| `--single-scale` | try one template size only, faster |
-| `--no-mask` | use every template pixel, including background and poles |
-| `--show-all` | print the top 5 guesses instead of just #1 |
-| `--no-show` | print only, no window |
+`find_waldo.py` is the only file you run. It tries every template in
+`data/templates` and keeps the single best-scoring box.
 
 ## How it works
 
@@ -58,47 +53,40 @@ taken, blanking a template-sized window around each so they are not the
 same spot shifted by a pixel.
 
 **Picking one.** All candidates are sorted by score and any box that
-overlaps a better one (IoU above 0.3) is dropped. Guess #1 is Waldo.
-When the scene is labeled, the guess counts as correct if it overlaps the
-label with IoU of at least 0.5.
+overlaps a better one (IoU above 0.3) is dropped. This runs once per
+template, and the best box across all templates is Waldo. When the scene is
+labeled, the guess counts as correct if it overlaps the label with IoU of at
+least 0.5.
 
 A longer, stage-by-stage version of the diagram is in
 [docs/pipeline_detailed.svg](docs/pipeline_detailed.svg).
 
 ## Results
 
-The template always comes from the *other* scene, so nothing is an exact
-pixel copy:
+Each labeled scene, searched with every template (so the other scene's
+template is always in the mix):
 
-| Scene | Template | #1 guess | Time |
-|---|---|---|---|
-| 1.jpg | 9.png | correct | ~10 s |
-| 9.jpg | 1.png | correct | ~5 s |
+| Scene | Guess | Time |
+|---|---|---|
+| 1.jpg | correct | ~20 s |
+| 9.jpg | correct | ~10 s |
 
-Both scenes also pass with their own template. The tests run the same
-check on 10x crops so they finish in seconds:
-
-```bash
-python -m pytest
-```
+To check after a change, run the file on each labeled scene and read the
+`CORRECT` line.
 
 ## Layout
 
 ```
-find_waldo.py             run the finder
-waldo/matcher.py          multi-scale ZNCC matching and peak picking
+find_waldo.py             the one file to run
+waldo/matcher.py          preprocessing, multi-scale ZNCC matching, box overlap
 waldo/template_mask.py    mask out background and poles in the template
-waldo/preprocess.py       CLAHE + blur
-waldo/evaluate.py         IoU between boxes
 waldo/visualize.py        result window with the zoomed side panel
-waldo/data.py             paths, image reading, labels
 scripts/label_waldo.py    drag a box around Waldo in a new scene
 scripts/make_templates.py cut templates out of the labeled scenes
 data/original/            full scenes (Hey-Waldo dataset, see SOURCE.md)
 data/labels.json          Waldo's box in each labeled scene
-data/templates/           the cut-out templates
+data/templates/           the cut-out templates, what the finder knows
 docs/                     diagrams and the example image
-tests/                    pytest
 ```
 
 ## Adding a scene
@@ -106,15 +94,16 @@ tests/                    pytest
 ```bash
 python scripts/label_waldo.py 5.jpg      # drag a box around his head and hat
 python scripts/make_templates.py         # writes data/templates/5.png
-python find_waldo.py data/original/5.jpg --template data/templates/1.png
+python find_waldo.py data/original/5.jpg # now searched with all templates
 ```
 
 ## Limits
 
 Template matching finds things that look like the template. It struggles
 when Waldo is mostly hidden, drawn from an unusual angle, or when another
-striped figure is a closer match at some size. Adding a second template and
-keeping the better score is the simplest next step if a new scene fails.
+striped figure is a closer match at some size. Labeling one more scene and
+cutting its template is the simplest fix if a new scene fails: every
+template in the folder is tried automatically.
 
 ## History
 

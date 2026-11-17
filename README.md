@@ -106,72 +106,6 @@ the page has a hand-drawn answer, that box in green. The right side of the
 window is the guess zoomed in. The program also prints the box, the score
 and whether the guess was right.
 
-### What was tried first
-
-An earlier version of this repository (still on `main` at commit 3040bd5)
-compared four scoring measures written from scratch, three color spaces,
-edge maps and a red/white color filter, in a grid search of 240 settings
-on small crops. Three things came out of it. Plain cross-correlation
-fails, because any bright patch scores well whether or not it looks like
-Waldo, so the score has to be normalized. When the cut-out comes from a
-different page, the best setting was ZNCC on color with the contrast fix
-and the blur. And on full pages nothing worked until the mask was added:
-the spear and the yellow corners in cut-out 1 were dragging every
-comparison down. The settings that did not help were removed so the code
-stays small.
-
-## Results
-
-Two pages are labeled so far, 1.jpg and 9.jpg, with one cut-out taken
-from each. Each page was searched two ways: with both cut-outs available,
-and the honest way, with only the cut-out from the other page.
-
-| Page | Cut-outs used | Found by | Score | Overlap with answer | Right? | Time |
-|---|---|---|---|---|---|---|
-| 1.jpg | both | 1.png (its own) | 8.35 | 1.00 | yes | 19.8 s |
-| 1.jpg | 9.png only | 9.png | 5.74 | 0.76 | yes | 9.5 s |
-| 9.jpg | both | 9.png (its own) | 12.58 | 1.00 | yes | 9.2 s |
-| 9.jpg | 1.png only | 1.png | 4.53 | 0.76 | yes | 4.6 s |
-
-Waldo is the first guess on both pages in both settings. The second and
-fourth rows are the ones that count: a cut-out from one page finds Waldo
-on a page it came nowhere near, at a different size (0.80 times on page 9,
-1.35 times on page 1), with a lower score that is still the best on the
-page. Times are on a laptop CPU.
-
-![Page 1 with the best guess boxed in red and a zoomed side panel](docs/example_1.jpg)
-
-*Page 1 is the harder one. Waldo is tiny, surrounded by hundreds of
-soldiers in red and blue, with a spear in front of his face. The red guess
-sits on the green answer.*
-
-On page 9 with only cut-out 1, the winning spot scored 4.53 and the
-runner-up 4.15. That gap is real but small, and a page with a better
-decoy could flip it. See Limits.
-
-Two labeled pages is a demonstration, not a benchmark. The other 17 pages
-in `data/original` have no answer box yet. Labeling them takes about a
-minute each with the labeler script and would give a real accuracy
-number.
-
-## Quick start
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-
-python find_waldo.py                       # searches the page named at the top of the file
-python find_waldo.py path/to/any_page.jpg  # or any image you like
-```
-
-A window opens with the result. Press any key to close it. Add `--no-show`
-to print the box without a window.
-
-`find_waldo.py` is the only file you run. It tries every cut-out in
-`data/templates` and keeps the single best-scoring box. When the page is
-one of the labeled ones it also prints `CORRECT` or `WRONG`.
-
 ## Layout
 
 ```
@@ -201,9 +135,7 @@ The finder looks for things that look like the cut-out. It struggles when
 Waldo is mostly hidden, drawn from an unusual angle, or when another
 striped figure is a closer match at some size. The search is also brute
 force, 17 sizes times every pixel times every cut-out, so time grows with
-page size and the number of cut-outs. If a new page fails, the simplest
-fix is to label one more page and cut its template: every cut-out in the
-folder is tried automatically.
+page size and the number of cut-outs. 
 
 ## Ethical implications
 
@@ -220,26 +152,3 @@ Copyright is the other point. The pages come from the Hey-Waldo dataset,
 which is under the Open Database License, but the drawings themselves
 belong to their copyright holders. They are used here for study and
 should not be passed on as if they were free.
-
-No personal data is involved. The only images are published cartoon pages
-and the labels are boxes I drew.
-
-## References
-
-1. Hey-Waldo dataset, V. Constantinou:
-   <https://github.com/vc1492a/Hey-Waldo> (folder `original-images`,
-   ODbL-1.0). Source of all pages in `data/original`.
-2. Martin Handford, *Where's Wally?*, Walker Books, 1987. Published in the
-   United States as *Where's Waldo?* by Little, Brown, 1987.
-3. OpenCV template matching tutorial and `matchTemplate` reference:
-   <https://docs.opencv.org/4.x/d4/dc6/tutorial_py_template_matching.html>,
-   <https://docs.opencv.org/4.x/df/dfb/group__imgproc__object.html>
-4. J. P. Lewis, "Fast Normalized Cross-Correlation", *Vision Interface*,
-   1995. The standard reference for normalized cross-correlation matching.
-5. K. Zuiderveld, "Contrast Limited Adaptive Histogram Equalization",
-   *Graphics Gems IV*, 1994, pp. 474–485. The contrast step.
-6. R. Brunelli, *Template Matching Techniques in Computer Vision: Theory
-   and Practice*, Wiley, 2009. Background on masked and multi-size
-   matching.
-7. The earlier experiments this design came from are in this repository's
-   history on `main` at commit 3040bd5.

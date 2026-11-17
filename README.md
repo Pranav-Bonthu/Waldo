@@ -1,16 +1,14 @@
 # Where's Waldo Finder
 
-A small, readable Waldo finder built on one idea: **template matching**.
-Cut-outs of Waldo's head and hat are slid over the whole page at several
-sizes, every position gets a similarity score, and the best-scoring spot is
-the answer. No machine learning, one file to run, OpenCV and NumPy only.
+A small Waldo finder built on one idea: slide a picture of Waldo over the
+whole page, score how well it fits at every spot, and box the best one.
+No machine learning. One file to run. OpenCV and NumPy only.
 
-![Scene 9 with the best guess boxed in red and a zoomed side panel](docs/example_9.jpg)
+![Page 9 with the best guess boxed in red and a zoomed side panel](docs/example_9.jpg)
 
-*Scene 9. Red = the finder's guess, green = the labeled answer, right panel =
-the guess zoomed in with its score.*
+*Page 9. Red is the finder's guess, green is where Waldo really is, and the
+panel on the right is the guess zoomed in with its score.*
 
-**Contents:**
 [Background](#background) ·
 [Problem statement](#problem-statement) ·
 [Approach](#approach) ·
@@ -23,164 +21,158 @@ the guess zoomed in with its score.*
 
 ## Background
 
-*Where's Waldo* is a visual search puzzle: a single small character hidden
-in a page crammed with hundreds of look-alikes, stripes and red hats placed
-there on purpose to fool you. That makes it a surprisingly good test case
-for an image processing course project:
+*Where's Wally?* is a series of picture books by the British illustrator
+Martin Handford. The first one came out in 1987, and the American edition
+renamed the character Waldo. Every page is a crowded drawing of hundreds of
+tiny people at a beach, a train station, a battlefield, and somewhere in
+the crowd is Waldo: a thin man in a red and white striped shirt, a red and
+white bobble hat and round glasses. The game is to find him.
 
-- **The target is well defined.** Waldo always has the same red-and-white
-  striped shirt, round glasses and bobble hat, so a picture of him is a
-  reasonable description of what to look for. No labeled dataset of
-  thousands of examples is needed.
-- **The scene is hard on purpose.** The pages are full of decoys at
-  different sizes, partly hidden behind people and poles, so the naive
-  version of every technique fails and each fix has to be reasoned about.
-- **Every step can be looked at.** Unlike a trained neural network, each
-  stage here (contrast, blur, mask, correlation, peaks) is a picture you can
-  open and inspect, which is the point of learning image processing.
+The books are designed to make that hard. Waldo is drawn very small, often
+under half an inch tall. The crowd is full of people in red and white
+clothes, striped shirts and red hats. He is usually half hidden behind
+someone, a pole or the edge of a tent. People can spend minutes on one
+page.
 
-I chose this project because it lets a handful of classical tools
-(histogram equalization, filtering, normalized cross-correlation, non-maximum
-suppression) carry a whole, recognizable task from input image to answer,
-and because it is easy to tell whether the answer is right.
+That mix is what makes it a good project for an image processing class.
+We know exactly what we are looking for, because we have a picture of him,
+so no large training set is needed. At the same time the page is built to
+fool pattern matching, so the plain version of each technique fails and
+has to be improved step by step. And it is easy to check the answer: open
+the page and look.
 
 ## Problem statement
 
-**Input:** one full *Where's Waldo* page as a color image, plus a few small
-cut-outs of Waldo ("templates") taken from other pages.
+Can a program find Waldo on a page it has never seen?
 
-**Output:** a single box on the input page marking where Waldo is.
+Given a full page and a small cut-out of Waldo taken from a different
+page, draw one box around Waldo. The box is right if it lands on him,
+which we define as overlapping the hand-drawn answer box by at least half
+(the usual rule in object detection, called intersection over union or
+IoU).
 
-**Correct** means the box overlaps the hand-labeled answer with an
-intersection-over-union (IoU) of at least 0.5, the usual threshold in object
-detection.
+Rules I set for the project:
 
-**Constraints I set myself:**
-
-- Classical image processing only. No training, no neural networks.
-- One file to run, understandable top to bottom in an afternoon.
-- A full page should be searched in seconds on a laptop.
-- It should work on pages the templates did not come from. A template cut
-  from a page will always match that same page perfectly, so the honest
-  test is to search a page using only templates from *other* pages.
+- Plain image processing only. No training and no neural networks.
+- One file to run, short enough to read in an afternoon.
+- A full page should take seconds on a laptop.
+- The real test uses a cut-out from a different page. A cut-out taken
+  from the page being searched always matches itself perfectly, so that
+  result says nothing.
 
 ## Approach
 
-![Pipeline: template is masked, scene is preprocessed, both go through a loop over 17 sizes of masked ZNCC matching, peaks are merged, and the best guess is checked and shown](docs/pipeline.svg)
+![Eight steps from a Waldo cut-out and a page to a red box, with a bubble explaining each step](docs/pipeline.svg)
 
-The finder has four parts. A longer, stage-by-stage version of the diagram
-is in [docs/pipeline_detailed.svg](docs/pipeline_detailed.svg).
+Each step in plain words. The code for steps 2 to 7 is in `waldo/`, and
+`find_waldo.py` runs them in order. A more technical version of the
+diagram, with the OpenCV names, is in
+[docs/pipeline_detailed.svg](docs/pipeline_detailed.svg).
 
-### 1. Template side: mask out what is not Waldo
+**1. What we start with.** A small cut-out of Waldo's head and hat
+(the "template") and the page to search. Both stay in color because the
+red and white stripes are the main clue.
 
-The templates are cut straight out of a scene, so they contain things that
-are not Waldo: background color in the corners and, in scene 1, a spear
-across his face. `waldo/template_mask.py` builds a mask automatically:
+**2. Clean up the cut-out.** The cut-out was snipped straight out of a
+page, so it has things in it that are not Waldo: yellow background in the
+corners and, on page 1, a spear across his face. The program finds the
+main color along the cut-out's edge and treats it as background, and finds
+any tall thin streak of strong color and treats it as a pole. Those pixels
+get a "skip me" mark called a mask. The picture below shows the two
+cut-outs, their masks and what is left to compare.
 
-- the dominant strong color along the template's border is treated as
-  background and dropped;
-- any tall, thin blob of strong color (a pole or spear) is dropped;
-- everything else is kept and compared.
+![The two cut-outs, their masks, and what is actually compared](docs/templates.png)
 
-![The two templates, their masks, and what is actually compared](docs/templates.png)
+*Left: cut-out 1 with the yellow background and the spear masked out.
+Right: cut-out 9 has neither, so all of it is kept.*
 
-*Left: template 1 with the yellow background and the spear masked out.
-Right: template 9 has no background or pole, so the whole crop is kept.*
+**3. Even out the page.** Two pages drawn with different inks or scanned
+differently should still be comparable, so the page gets two small fixes.
+First the contrast is evened out separately in each small tile of the
+image, so a dim corner and a bright corner end up looking alike. The
+technique is called CLAHE, short for contrast limited adaptive histogram
+equalization; "adaptive" means per tile, "limited" means it will not
+over-boost flat areas. Then a light blur (5 by 5 pixels) softens the
+drawing so tiny pen strokes do not count. The cut-out gets the same
+two fixes so the two images are on equal terms.
 
-### 2. Scene side: even out the page
+**4. Try many sizes.** Waldo is bigger on some pages than others. The
+cut-out is resized from 0.6 times to 1.4 times its original size in 17
+steps, and each size is tried in turn.
 
-Color is kept, because the red and white stripes are the whole point.
-Two small steps (`preprocess` in `waldo/matcher.py`) make pages drawn
-with different inks comparable:
+**5. Slide and score.** At each size the cut-out is laid over every
+position on the page and compared with the patch underneath it. The
+comparison first subtracts the average brightness of each patch and
+divides by how spread out its values are, so a match is about the pattern
+of stripes, glasses and hat and not about how light or dark the area is.
+Masked pixels are left out of the sum. This measure is called zero-mean
+normalized cross-correlation (ZNCC). OpenCV computes it for every position
+at once, so the result is a score map the size of the page.
 
-- **CLAHE** (contrast limited adaptive histogram equalization) stretches
-  contrast separately in each small tile of the image, so a dim corner and
-  a bright corner end up with similar contrast.
-- A **5×5 Gaussian blur** softens the drawing so that tiny line differences
-  between two artists' Waldos do not count against a match.
+**6. Keep the best spots.** Score maps from different sizes are not on the
+same scale, so each map is converted to "how many standard deviations
+above this map's average". A score of 4.5 means the spot is 4.5 standard
+deviations better than a typical spot on that page. The 5 highest spots
+per size are kept. After each one is taken, a cut-out-sized window around
+it is blanked out so the next pick is a different place and not the same
+spot shifted by a pixel.
 
-The template is given exactly the same treatment, so the two are compared
-on equal terms.
+**7. Pick one.** All spots from all sizes and all cut-outs are sorted by
+score. Any spot that overlaps a better one is dropped. The top spot is
+the answer: a box, a score and the size it was found at.
 
-### 3. The loop: slide the template at many sizes
+**8. Show it.** The page opens in a window with the guess in red and, if
+the page has a hand-drawn answer, that box in green. The right side of the
+window is the guess zoomed in. The program also prints the box, the score
+and whether the guess was right.
 
-Waldo is not drawn at the same size on every page, so the template is
-resized from 0.6× to 1.4× in 17 steps. At each size:
+### What was tried first
 
-- `cv2.matchTemplate` slides the masked template across the scene and
-  scores every position with **ZNCC** (zero-mean normalized
-  cross-correlation). ZNCC subtracts each window's mean and divides by its
-  spread, so a match is about the *pattern* of stripes and glasses, not
-  about brightness, and the mask keeps the dropped pixels out of the sum.
-- The score map is **z-scored** (how many standard deviations each position
-  sits above the average for that size) so that sizes can be compared
-  fairly. A score of 4.5 means "4.5 standard deviations better than a
-  typical spot".
-- The **5 highest peaks** are kept, blanking a template-sized window around
-  each one so they are not the same spot shifted by a pixel
-  (non-maximum suppression).
-
-### 4. Pick one
-
-All candidates from all sizes are sorted by score and any box that overlaps
-a better one (IoU above 0.3) is dropped. This runs once per template, and
-the best box across all templates is the answer. `find_waldo.py` prints the
-box and shows it in a window with a zoomed side panel.
-
-### Why these choices
-
-An earlier version of this repo (still on `main` at commit 3040bd5)
-compared four correlation measures written from scratch (plain
-cross-correlation, SSD, NCC, ZNCC), three color spaces, edge maps and a
-red/white color filter, with a grid search over 240 combinations on small
-crops. Findings that shaped the final design:
-
-- Plain cross-correlation fails (68% top-5 accuracy) because any bright
-  window scores high whether or not it looks like Waldo. Normalizing (NCC,
-  ZNCC) fixes this.
-- With a template from the *same* image, almost everything reaches 100%.
-  With a template from the *other* image, the best setting was ZNCC on
-  color with CLAHE and blur, at 70% top-5 on crops. Color plus smoothing is
-  what helps when two Waldos are drawn slightly differently.
-- On full pages, nothing worked until the template mask was added. The
-  spear across Waldo's face in template 1 and the background in its corners
-  were dragging every comparison down.
-
-Everything that did not help was removed so the code stays small.
+An earlier version of this repository (still on `main` at commit 3040bd5)
+compared four scoring measures written from scratch, three color spaces,
+edge maps and a red/white color filter, in a grid search of 240 settings
+on small crops. Three things came out of it. Plain cross-correlation
+fails, because any bright patch scores well whether or not it looks like
+Waldo, so the score has to be normalized. When the cut-out comes from a
+different page, the best setting was ZNCC on color with the contrast fix
+and the blur. And on full pages nothing worked until the mask was added:
+the spear and the yellow corners in cut-out 1 were dragging every
+comparison down. The settings that did not help were removed so the code
+stays small.
 
 ## Results
 
-Two pages are labeled so far (1.jpg and 9.jpg), with one template cut from
-each. Each page was searched two ways: with every template available, and
-the honest "held-out" way, with only the template from the *other* page.
+Two pages are labeled so far, 1.jpg and 9.jpg, with one cut-out taken
+from each. Each page was searched two ways: with both cut-outs available,
+and the honest way, with only the cut-out from the other page.
 
-| Scene | Templates used | Found by | Score | Overlap with label | Result | Time |
+| Page | Cut-outs used | Found by | Score | Overlap with answer | Right? | Time |
 |---|---|---|---|---|---|---|
-| 1.jpg | all | 1.png (its own) | 8.35 | 1.00 | correct | 19.8 s |
-| 1.jpg | held-out (9.png only) | 9.png | 5.74 | 0.76 | correct | 9.5 s |
-| 9.jpg | all | 9.png (its own) | 12.58 | 1.00 | correct | 9.2 s |
-| 9.jpg | held-out (1.png only) | 1.png | 4.53 | 0.76 | correct | 4.6 s |
+| 1.jpg | both | 1.png (its own) | 8.35 | 1.00 | yes | 19.8 s |
+| 1.jpg | 9.png only | 9.png | 5.74 | 0.76 | yes | 9.5 s |
+| 9.jpg | both | 9.png (its own) | 12.58 | 1.00 | yes | 9.2 s |
+| 9.jpg | 1.png only | 1.png | 4.53 | 0.76 | yes | 4.6 s |
 
-Both pages are found as the #1 guess in both settings. The held-out rows
-are the ones that matter: Waldo drawn by one page's template is found on a
-page it has never seen, at a different size (0.80× and 1.35×) and with a
-lower but still clearly-best score. Times are on a laptop CPU.
+Waldo is the first guess on both pages in both settings. The second and
+fourth rows are the ones that count: a cut-out from one page finds Waldo
+on a page it came nowhere near, at a different size (0.80 times on page 9,
+1.35 times on page 1), with a lower score that is still the best on the
+page. Times are on a laptop CPU.
 
-![Scene 1 with the best guess boxed in red and a zoomed side panel](docs/example_1.jpg)
+![Page 1 with the best guess boxed in red and a zoomed side panel](docs/example_1.jpg)
 
-*Scene 1, the harder page: Waldo is tiny, surrounded by hundreds of
-red-and-blue soldiers, and has a spear in front of his face. The guess
-(red) sits on top of the label (green).*
+*Page 1 is the harder one. Waldo is tiny, surrounded by hundreds of
+soldiers in red and blue, with a spear in front of his face. The red guess
+sits on the green answer.*
 
-What the score means in practice: on scene 9 searched with the held-out
-template, the winning spot scored 4.53 and the runner-up 4.15, so the margin
-is real but not huge. A page with a better decoy could flip that order,
-which is why the Limits section matters.
+On page 9 with only cut-out 1, the winning spot scored 4.53 and the
+runner-up 4.15. That gap is real but small, and a page with a better
+decoy could flip it. See Limits.
 
-**Honest caveat.** Two labeled pages is a demonstration, not a benchmark.
-The remaining 17 pages in `data/original` are unlabeled; labeling them (one
-minute each with the labeler script) is the natural next step to get a real
-accuracy number.
+Two labeled pages is a demonstration, not a benchmark. The other 17 pages
+in `data/original` have no answer box yet. Labeling them takes about a
+minute each with the labeler script and would give a real accuracy
+number.
 
 ## Quick start
 
@@ -189,30 +181,30 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-python find_waldo.py                       # searches the scene named at the top of the file
-python find_waldo.py path/to/any_scene.jpg # or any image you like
+python find_waldo.py                       # searches the page named at the top of the file
+python find_waldo.py path/to/any_page.jpg  # or any image you like
 ```
 
 A window opens with the result. Press any key to close it. Add `--no-show`
 to print the box without a window.
 
-`find_waldo.py` is the only file you run. It tries every template in
-`data/templates` and keeps the single best-scoring box. When the scene is
-one of the labeled pages it also prints `CORRECT` or `WRONG`.
+`find_waldo.py` is the only file you run. It tries every cut-out in
+`data/templates` and keeps the single best-scoring box. When the page is
+one of the labeled ones it also prints `CORRECT` or `WRONG`.
 
 ## Layout
 
 ```
 find_waldo.py             the one file to run
-waldo/matcher.py          preprocessing, multi-scale ZNCC matching, box overlap
-waldo/template_mask.py    mask out background and poles in the template
+waldo/matcher.py          evening out, sliding at many sizes, scoring, box overlap
+waldo/template_mask.py    mask out background and poles in the cut-out
 waldo/visualize.py        result window with the zoomed side panel
-scripts/label_waldo.py    drag a box around Waldo in a new scene
-scripts/make_templates.py cut templates out of the labeled scenes
+scripts/label_waldo.py    drag a box around Waldo on a new page
+scripts/make_templates.py cut templates out of the labeled pages
 data/original/            full pages (Hey-Waldo dataset, see data/original/SOURCE.md)
-data/labels.json          Waldo's box in each labeled page
-data/templates/           the cut-out templates, what the finder knows
-docs/                     diagrams, the template strip and the example images
+data/labels.json          Waldo's box on each labeled page
+data/templates/           the cut-outs, what the finder knows
+docs/                     diagrams, the cut-out strip and the example images
 ```
 
 ### Adding a page
@@ -220,53 +212,54 @@ docs/                     diagrams, the template strip and the example images
 ```bash
 python scripts/label_waldo.py 5.jpg      # drag a box around his head and hat
 python scripts/make_templates.py         # writes data/templates/5.png
-python find_waldo.py data/original/5.jpg # now searched with all templates
+python find_waldo.py data/original/5.jpg # now searched with all cut-outs
 ```
 
 ## Limits
 
-Template matching finds things that look like the template. It struggles
-when Waldo is mostly hidden, drawn from an unusual angle, or when another
+The finder looks for things that look like the cut-out. It struggles when
+Waldo is mostly hidden, drawn from an unusual angle, or when another
 striped figure is a closer match at some size. The search is also brute
-force: 17 sizes × every pixel × every template, so time grows with page
-size and template count. Labeling one more page and cutting its template
-is the simplest fix if a new page fails: every template in the folder is
-tried automatically.
+force, 17 sizes times every pixel times every cut-out, so time grows with
+page size and the number of cut-outs. If a new page fails, the simplest
+fix is to label one more page and cut its template: every cut-out in the
+folder is tried automatically.
 
 ## Ethical implications
 
-This is a toy, but the technique is not. "Find one specific face or pattern
-inside a crowded picture" is the same problem as locating a person in a
-crowd photo or a surveillance frame. Template matching is far too weak to
-do that reliably on real photographs, but the pipeline shape (describe the
-target, scan the image at many sizes, rank the peaks) is exactly what
-stronger detectors do, and the code here would not need to change much to
-take a face crop instead of a Waldo crop. I think that is worth saying out
-loud: the educational value of the project comes from the same idea that
-underpins tools I would not want pointed at people without their consent.
+Finding one small figure in a crowded picture is the same problem as
+finding one person in a crowd photo or a security camera frame. Template
+matching is far too weak to do that on real photographs, but the shape of
+the pipeline (describe the target, scan the image at many sizes, rank the
+spots) is what real detectors do, and swapping the Waldo cut-out for a
+face crop would take very little code. That is the use I would not want
+this to feed: tracking people who have not agreed to be tracked. A course
+project will not change that either way, but it is where this idea leads.
 
-Two smaller points:
+Copyright is the other point. The pages come from the Hey-Waldo dataset,
+which is under the Open Database License, but the drawings themselves
+belong to their copyright holders. They are used here for study and
+should not be passed on as if they were free.
 
-- **Copyright.** The pages come from the Hey-Waldo dataset (ODbL licence),
-  but the artwork itself belongs to its copyright holders. It is used here
-  for study only and should not be redistributed as if it were free.
-- **No personal data** is involved. The only images are published cartoon
-  pages and the labels are boxes I drew.
+No personal data is involved. The only images are published cartoon pages
+and the labels are boxes I drew.
 
 ## References
 
 1. Hey-Waldo dataset, V. Constantinou:
    <https://github.com/vc1492a/Hey-Waldo> (folder `original-images`,
    ODbL-1.0). Source of all pages in `data/original`.
-2. OpenCV template matching tutorial and `matchTemplate` reference:
+2. Martin Handford, *Where's Wally?*, Walker Books, 1987. Published in the
+   United States as *Where's Waldo?* by Little, Brown, 1987.
+3. OpenCV template matching tutorial and `matchTemplate` reference:
    <https://docs.opencv.org/4.x/d4/dc6/tutorial_py_template_matching.html>,
    <https://docs.opencv.org/4.x/df/dfb/group__imgproc__object.html>
-3. J. P. Lewis, "Fast Normalized Cross-Correlation", *Vision Interface*,
-   1995. The standard reference for NCC/ZNCC template matching.
-4. K. Zuiderveld, "Contrast Limited Adaptive Histogram Equalization",
-   *Graphics Gems IV*, 1994, pp. 474–485. The CLAHE step.
-5. R. Brunelli, *Template Matching Techniques in Computer Vision: Theory
-   and Practice*, Wiley, 2009. Background on masked and multi-scale
+4. J. P. Lewis, "Fast Normalized Cross-Correlation", *Vision Interface*,
+   1995. The standard reference for normalized cross-correlation matching.
+5. K. Zuiderveld, "Contrast Limited Adaptive Histogram Equalization",
+   *Graphics Gems IV*, 1994, pp. 474–485. The contrast step.
+6. R. Brunelli, *Template Matching Techniques in Computer Vision: Theory
+   and Practice*, Wiley, 2009. Background on masked and multi-size
    matching.
-6. The earlier experiments this design was distilled from are in this
-   repository's history on `main` at commit 3040bd5.
+7. The earlier experiments this design came from are in this repository's
+   history on `main` at commit 3040bd5.

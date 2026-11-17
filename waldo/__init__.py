@@ -1,11 +1,6 @@
-"""Where's Waldo finder using classical image processing.
+"""Helpers for find_waldo.py.
 
-Modules:
-    data         loading labels, templates and zoomed crops
-    preprocess   color spaces, smoothing, histogram equalization, edges
-    correlation  from-scratch template matching (loops and vectorized NumPy)
-    match        one entry point that runs OpenCV or NumPy matching
-    peaks        picking the top-k locations with non-max suppression
-    color_mask   red/white color filter learned from the template
-    evaluate     IoU, top-5 accuracy and negative rejection
+    matcher        preprocessing, multi-scale template matching, box overlap
+    template_mask  ignore template pixels that are not Waldo
+    visualize      draw the result and show the pop-up window
 """

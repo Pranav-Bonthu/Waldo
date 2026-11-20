@@ -1,0 +1,11 @@
+$ python find_waldo.py data/original/1.jpg   (only 9.png in data/templates)
+Scene: data/original/1.jpg   templates: 1   time: 9.5 s
+  Waldo: box=[702, 510, 40, 57]  score=5.74  size=1.35x  template=9.png
+  Label [707, 508, 36, 54]: CORRECT (overlap 0.76)
+  top 5 candidates: #1 score 5.74 at 1.35x iou 0.76, #2 score 5.67 at 1.25x iou 0.00, #3 score 5.65 at 1.35x iou 0.00, #4 score 5.62 at 1.25x iou 0.00, #5 score 5.49 at 1.05x iou 0.00
+
+$ python find_waldo.py data/original/9.jpg   (only 1.png in data/templates)
+Scene: data/original/9.jpg   templates: 1   time: 4.7 s
+  Waldo: box=[235, 728, 29, 43]  score=4.53  size=0.80x  template=1.png
+  Label [232, 731, 30, 42]: CORRECT (overlap 0.76)
+  top 5 candidates: #1 score 4.53 at 0.80x iou 0.76, #2 score 4.15 at 1.40x iou 0.00, #3 score 4.01 at 0.80x iou 0.00, #4 score 4.01 at 1.25x iou 0.00, #5 score 4.00 at 1.15x iou 0.00
